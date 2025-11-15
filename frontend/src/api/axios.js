@@ -35,10 +35,15 @@ apiClient.interceptors.response.use(
       // Clear auth data from localStorage
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      
-      // Redirect to login
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
+
+      // Determine correct login portal based on current route
+      const pathname = window.location.pathname;
+      const isAdminRoute = pathname.startsWith('/admin');
+      const targetLogin = isAdminRoute ? '/admin/login' : '/login';
+
+      // Redirect only if not already on the correct login page
+      if (pathname !== targetLogin) {
+        window.location.href = targetLogin;
       }
     }
 

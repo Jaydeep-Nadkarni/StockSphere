@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import apiClient from '../api/axios';
 import { toast } from 'react-toastify';
 
 export default function AdminDashboard() {
@@ -28,7 +28,7 @@ export default function AdminDashboard() {
       if (roleFilter) params.append('role', roleFilter);
       params.append('page', page);
 
-      const response = await axios.get(`/api/users?${params}`);
+      const response = await apiClient.get(`/users?${params}`);
       if (response.data.success) {
         setUsers(response.data.data.users);
         setPagination(response.data.data.pagination);
@@ -42,78 +42,48 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, search, roleFilter]);
 
-  // Handle modal open for create
-  const handleOpenModal = () => {
-    setEditingId(null);
-    setFormData({ name: '', email: '', password: '', role: 'clerk' });
-    setShowModal(true);
-  };
-
-  // Handle modal open for edit
-  const handleEditUser = (user) => {
-    setEditingId(user.id);
-    setFormData({ 
-      name: user.name, 
-      email: user.email, 
-      password: '', 
-      role: user.role 
-    });
-    setShowModal(true);
-  };
-
-  // Handle form submit
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleEdit = async () => {
     try {
-      if (editingId) {
-        // Update user
-        const response = await axios.put(`/api/users/${editingId}`, formData);
-        if (response.data.success) {
-          toast.success(`✅ ${response.data.message}`);
-          fetchUsers();
-          setShowModal(false);
-        }
-      } else {
-        // Create user
-        const response = await axios.post('/api/users', formData);
-        if (response.data.success) {
-          toast.success(`✅ ${response.data.message}`);
-          fetchUsers();
-          setShowModal(false);
-        }
+      const response = await apiClient.put(`/users/${editingId}`, formData);
+      if (response.data.success) {
+        toast.success('✅ User updated successfully');
+        setShowModal(false);
+        setEditingId(null);
+        setFormData({ name: '', email: '', password: '', role: 'clerk' });
+        fetchUsers();
       }
     } catch (error) {
-      toast.error(`❌ ${error.response?.data?.message || error.message}`);
+      toast.error(`❌ Update failed: ${error.response?.data?.message || error.message}`);
     }
   };
 
-  // Handle delete user
-  const handleDeleteUser = async (userId, userName) => {
-    if (!window.confirm(`Are you sure you want to delete ${userName}?`)) return;
-
+  const handleCreate = async () => {
     try {
-      const response = await axios.delete(`/api/users/${userId}`);
+      const response = await apiClient.post('/users', formData);
+      if (response.data.success) {
+        toast.success('✅ User created successfully');
+        setShowModal(false);
+        setFormData({ name: '', email: '', password: '', role: 'clerk' });
+        setPage(1);
+        fetchUsers();
+      }
+    } catch (error) {
+      toast.error(`❌ Creation failed: ${error.response?.data?.message || error.message}`);
+    }
+  };
+
+  const handleDelete = async (userId) => {
+    try {
+      const response = await apiClient.delete(`/users/${userId}`);
       if (response.data.success) {
         toast.success('✅ User deleted successfully');
         fetchUsers();
       }
     } catch (error) {
-      toast.error(`❌ ${error.response?.data?.message || error.message}`);
-    }
-  };
-
-  const getRoleBadgeColor = (role) => {
-    switch (role) {
-      case 'admin':
-        return 'bg-red-600 text-white';
-      case 'manager':
-        return 'bg-blue-600 text-white';
-      case 'clerk':
-        return 'bg-green-600 text-white';
-      default:
-        return 'bg-gray-600 text-white';
+      toast.error(`❌ Delete failed: ${error.response?.data?.message || error.message}`);
     }
   };
 
@@ -152,131 +122,91 @@ export default function AdminDashboard() {
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="">All Roles</option>
-            <option value="admin">Admin</option>
-            <option value="manager">Manager</option>
             <option value="clerk">Clerk</option>
+            <option value="manager">Manager</option>
+            <option value="admin">Admin</option>
           </select>
         </div>
 
         <div className="flex items-end">
           <button
-            onClick={handleOpenModal}
-            className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition flex items-center justify-center"
+            onClick={() => {
+              setShowModal(true);
+              setEditingId(null);
+              setFormData({ name: '', email: '', password: '', role: 'clerk' });
+            }}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
-            <span className="mr-2">➕</span>
-            Create User
-          </button>
-        </div>
-
-        <div className="flex items-end">
-          <button
-            onClick={() => fetchUsers()}
-            className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition flex items-center justify-center"
-          >
-            <span className="mr-2">🔄</span>
-            Refresh
+            ➕ New User
           </button>
         </div>
       </div>
 
       {/* Users Table */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        {loading ? (
-          <div className="p-8 text-center">
-            <p className="text-gray-600">Loading users...</p>
-          </div>
-        ) : users.length === 0 ? (
-          <div className="p-8 text-center">
-            <p className="text-gray-600">No users found. Create one to get started!</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-100 border-b">
-                <tr>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Name</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Email</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Role</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Created</th>
-                  <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Actions</th>
+      <div className="bg-white shadow rounded-lg overflow-hidden">
+        <table className="min-w-full">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {loading ? (
+              <tr>
+                <td colSpan="4" className="px-6 py-4 text-center">Loading...</td>
+              </tr>
+            ) : users.length === 0 ? (
+              <tr>
+                <td colSpan="4" className="px-6 py-4 text-center">No users found</td>
+              </tr>
+            ) : (
+              users.map((user) => (
+                <tr key={user._id || user.id}>
+                  <td className="px-6 py-4 whitespace-nowrap">{user.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{user.role}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right space-x-2">
+                    <button
+                      onClick={() => {
+                        setEditingId(user._id || user.id);
+                        setShowModal(true);
+                        setFormData({ name: user.name, email: user.email, password: '', role: user.role });
+                      }}
+                      className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                    >
+                      ✏️ Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(user._id || user.id)}
+                      className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                    >
+                      🗑️ Delete
+                    </button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {users.map((user) => (
-                  <tr key={user._id || user.id} className="border-b hover:bg-slate-50 transition">
-                    <td className="px-6 py-4 text-sm text-gray-900">{user.name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>
-                    <td className="px-6 py-4 text-sm">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getRoleBadgeColor(user.role)}`}>
-                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {new Date(user.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <button
-                        onClick={() => handleEditUser(user)}
-                        className="text-blue-600 hover:text-blue-800 font-semibold mr-4"
-                      >
-                        ✏️ Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteUser(user._id || user.id, user.name)}
-                        className="text-red-600 hover:text-red-800 font-semibold"
-                      >
-                        🗑️ Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
-
-      {/* Pagination */}
-      {pagination.total > 1 && (
-        <div className="flex items-center justify-between mt-6">
-          <button
-            onClick={() => setPage(Math.max(1, page - 1))}
-            disabled={page === 1}
-            className="px-4 py-2 bg-slate-300 hover:bg-slate-400 disabled:bg-gray-300 text-slate-900 font-semibold rounded-lg transition"
-          >
-            ← Previous
-          </button>
-          <span className="text-gray-600">
-            Page {pagination.current} of {pagination.total}
-          </span>
-          <button
-            onClick={() => setPage(Math.min(pagination.total, page + 1))}
-            disabled={page === pagination.total}
-            className="px-4 py-2 bg-slate-300 hover:bg-slate-400 disabled:bg-gray-300 text-slate-900 font-semibold rounded-lg transition"
-          >
-            Next →
-          </button>
-        </div>
-      )}
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              {editingId ? '✏️ Edit User' : '➕ Create New User'}
-            </h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">{editingId ? 'Edit User' : 'Create User'}</h2>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Full name"
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                 />
               </div>
 
@@ -286,23 +216,17 @@ export default function AdminDashboard() {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="user@example.com"
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Password {editingId && '(leave empty to keep current)'}
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
                 <input
                   type="password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  placeholder="••••••••"
-                  required={!editingId}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                 />
               </div>
 
@@ -311,30 +235,29 @@ export default function AdminDashboard() {
                 <select
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                 >
-                  <option value="admin">Admin</option>
-                  <option value="manager">Sales Manager</option>
                   <option value="clerk">Clerk</option>
+                  <option value="manager">Manager</option>
+                  <option value="admin">Admin</option>
                 </select>
               </div>
+            </div>
 
-              <div className="flex gap-4">
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition"
-                >
-                  {editingId ? 'Save Changes' : 'Create User'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-900 font-semibold rounded-lg transition"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
+            <div className="mt-6 flex justify-end space-x-2">
+              <button
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2 border border-gray-300 rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={editingId ? handleEdit : handleCreate}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+              >
+                {editingId ? 'Save Changes' : 'Create User'}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -63,9 +63,24 @@ userSchema.methods.toJSON = function () {
   return user;
 };
 
-// Instance method to compare passwords
+// Instance method to compare passwords (robust to legacy data)
 userSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.passwordHash);
+  // Prefer current hashed field, fallback to legacy 'password' if present
+  const stored = this.passwordHash || this.password;
+
+  // If nothing stored, treat as invalid credentials
+  if (!stored || typeof stored !== 'string') {
+    return false;
+  }
+
+  // If it looks like a bcrypt hash, compare securely
+  const isBcryptHash = /^\$2[aby]\$/.test(stored);
+  if (isBcryptHash) {
+    return await bcrypt.compare(enteredPassword, stored);
+  }
+
+  // Fallback: legacy plain-text password (not ideal, but avoids runtime error)
+  return enteredPassword === stored;
 };
 
 module.exports = mongoose.model('User', userSchema);
