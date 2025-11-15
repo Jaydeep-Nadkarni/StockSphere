@@ -298,5 +298,3 @@ exports.getLowStockProducts = async (req, res) => {
     });
   }
 };
-
-module.exports = { recalculateStock };

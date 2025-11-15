@@ -358,5 +358,3 @@ exports.getExpiredBatches = async (req, res) => {
     });
   }
 };
-
-module.exports = { updateProductStock };
