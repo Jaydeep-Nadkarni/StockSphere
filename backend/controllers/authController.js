@@ -1,37 +1,48 @@
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
 
-// @desc    Register a new user (Admin only)
-// @route   POST /api/auth/register
-// @access  Private (Admin only)
-exports.register = async (req, res) => {
+// @desc    Admin login (Admin only)
+// @route   POST /api/auth/admin/login
+// @access  Public (Admin role only)
+exports.adminLogin = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { email, password } = req.body;
 
     // Validate required fields
-    if (!name || !email || !password || !role) {
+    if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide all required fields: name, email, password, role',
+        message: 'Please provide email and password',
       });
     }
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({
+    // Find user by email and get password field
+    const user = await User.findOne({ email }).select('+passwordHash');
+
+    if (!user) {
+      return res.status(401).json({
         success: false,
-        message: 'User already exists',
+        message: 'Invalid credentials',
       });
     }
 
-    // Create new user
-    const user = await User.create({
-      name,
-      email,
-      passwordHash: password,
-      role,
-    });
+    // Check if user is admin
+    if (user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only administrators can access this login portal',
+      });
+    }
+
+    // Check if password matches
+    const isPasswordValid = await user.matchPassword(password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials',
+      });
+    }
 
     // Generate token
     const token = generateToken(user._id);
@@ -44,7 +55,7 @@ exports.register = async (req, res) => {
       role: user.role,
     };
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       data: {
         user: userData,
@@ -59,9 +70,9 @@ exports.register = async (req, res) => {
   }
 };
 
-// @desc    Login user
+// @desc    User login (Clerk & Manager)
 // @route   POST /api/auth/login
-// @access  Public
+// @access  Public (Non-admin roles)
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -81,6 +92,14 @@ exports.login = async (req, res) => {
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials',
+      });
+    }
+
+    // Check if user is NOT admin (only clerk and manager can use this endpoint)
+    if (user.role === 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Admin users must login via the admin portal at /admin/login',
       });
     }
 

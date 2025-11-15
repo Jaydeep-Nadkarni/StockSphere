@@ -7,6 +7,8 @@ import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import Toast from './components/Toast';
 import Login from './pages/Login';
+import AdminLogin from './pages/AdminLogin';
+import AdminDashboard from './pages/AdminDashboard';
 import Products from './pages/Products';
 import Orders from './pages/Orders';
 import CreateOrder from './pages/CreateOrder';
@@ -76,8 +78,21 @@ function App() {
           <Routes>
             {/* Public Routes */}
             <Route path="/login" element={<Login />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
 
-            {/* Protected Routes */}
+            {/* Admin Protected Routes */}
+            <Route
+              path="/admin/dashboard"
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <MainLayout>
+                    <AdminDashboard />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Regular Protected Routes */}
             <Route
               path="/"
               element={

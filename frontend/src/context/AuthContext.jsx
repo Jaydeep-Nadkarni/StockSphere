@@ -60,11 +60,38 @@ export const AuthProvider = ({ children }) => {
 
         setUser(user);
         setIsAuthenticated(true);
-        return response.data;
+        return user;
       }
     } catch (err) {
       const errorMessage =
         err.response?.data?.message || 'Login failed. Please try again.';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const adminLogin = async (email, password) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await apiClient.post('/auth/admin/login', { email, password });
+
+      if (response.data.success) {
+        const { user, token } = response.data.data;
+
+        // Store token and user in localStorage
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+
+        setUser(user);
+        setIsAuthenticated(true);
+        return user;
+      }
+    } catch (err) {
+      const errorMessage =
+        err.response?.data?.message || 'Admin login failed. Please try again.';
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -84,7 +111,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await apiClient.post('/auth/register', {
+      const response = await apiClient.post('/users', {
         name,
         email,
         password,
@@ -103,7 +130,7 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (err) {
       const errorMessage =
-        err.response?.data?.message || 'Registration failed. Please try again.';
+        err.response?.data?.message || 'User creation failed. Please try again.';
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -117,6 +144,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     error,
     login,
+    adminLogin,
     logout,
     register,
   };

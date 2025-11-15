@@ -7,6 +7,7 @@ const cors = require('cors');
 const connectDB = require('./config/db');
 const { initializeSocket } = require('./utils/socket');
 const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
 const productRoutes = require('./routes/productRoutes');
 const batchRoutes = require('./routes/batchRoutes');
 const reportRoutes = require('./routes/reportRoutes');
@@ -45,6 +46,9 @@ app.get('/', (req, res) => {
 
 // Authentication routes
 app.use('/api/auth', authRoutes);
+
+// User management routes (Admin only)
+app.use('/api/users', userRoutes);
 
 // Product management routes
 app.use('/api/products', productRoutes);

@@ -7,18 +7,24 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   const { user } = useContext(AuthContext);
   const location = useLocation();
 
-  const menuItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: '📊', roles: ['admin', 'manager', 'clerk'] },
-    { path: '/products', label: 'Products', icon: '📦', roles: ['admin', 'manager', 'clerk'] },
-    { path: '/batches', label: 'Batches', icon: '📋', roles: ['admin', 'manager', 'clerk'] },
-    { path: '/orders', label: 'Orders', icon: '🛒', roles: ['admin', 'manager', 'clerk'] },
-    { path: '/suppliers', label: 'Suppliers', icon: '🏭', roles: ['admin', 'manager'] },
-    { path: '/customers', label: 'Customers', icon: '👤', roles: ['admin', 'manager', 'clerk'] },
-    { path: '/reports', label: 'Reports', icon: '📈', roles: ['admin', 'manager'] },
-    { path: '/users', label: 'Users', icon: '👥', roles: ['admin'] },
+  const regularMenuItems = [
+    { path: '/dashboard', label: 'Dashboard', icon: '📊', roles: ['manager', 'clerk'] },
+    { path: '/products', label: 'Products', icon: '📦', roles: ['manager', 'clerk'] },
+    { path: '/batches', label: 'Batches', icon: '📋', roles: ['manager', 'clerk'] },
+    { path: '/orders', label: 'Orders', icon: '🛒', roles: ['manager', 'clerk'] },
+    { path: '/suppliers', label: 'Suppliers', icon: '🏭', roles: ['manager'] },
+    { path: '/customers', label: 'Customers', icon: '👤', roles: ['manager', 'clerk'] },
+    { path: '/reports', label: 'Reports', icon: '📈', roles: ['manager'] },
+  ];
+
+  const adminMenuItems = [
+    { path: '/admin/dashboard', label: 'User Management', icon: '👥', roles: ['admin'] },
   ];
 
   const isActive = (path) => location.pathname === path;
+
+  // Show admin menu for admin users, regular menu for others
+  const menuItems = user?.role === 'admin' ? adminMenuItems : regularMenuItems;
 
   return (
     <>
@@ -43,8 +49,17 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               {user?.name?.charAt(0).toUpperCase()}
             </div>
             <p className="font-semibold">{user?.name}</p>
-            <p className="text-gray-400 text-sm capitalize">{user?.role}</p>
+            <p className="text-gray-400 text-sm capitalize">
+              {user?.role === 'admin' ? '🔐 Administrator' : user?.role}
+            </p>
           </div>
+
+          {/* Admin Badge */}
+          {user?.role === 'admin' && (
+            <div className="bg-red-600 bg-opacity-20 border border-red-600 rounded-lg p-3 text-sm text-red-200 text-center">
+              🛡️ Admin Access Granted
+            </div>
+          )}
 
           {/* Navigation Menu */}
           <nav className="space-y-2">
