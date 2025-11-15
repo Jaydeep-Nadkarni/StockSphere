@@ -15,10 +15,12 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { path: '/suppliers', label: 'Suppliers', icon: '🏭', roles: ['manager'] },
     { path: '/customers', label: 'Customers', icon: '👤', roles: ['manager', 'clerk'] },
     { path: '/reports', label: 'Reports', icon: '📈', roles: ['manager'] },
+    { path: '/admin/ai-dashboard', label: 'AI Analytics', icon: '🤖', roles: ['manager'] },
   ];
 
   const adminMenuItems = [
     { path: '/admin/dashboard', label: 'User Management', icon: '👥', roles: ['admin'] },
+    { path: '/admin/ai-dashboard', label: 'AI Analytics', icon: '🤖', roles: ['admin'] },
   ];
 
   const isActive = (path) => location.pathname === path;

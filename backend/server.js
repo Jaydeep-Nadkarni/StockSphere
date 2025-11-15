@@ -11,6 +11,7 @@ const userRoutes = require('./routes/userRoutes');
 const productRoutes = require('./routes/productRoutes');
 const batchRoutes = require('./routes/batchRoutes');
 const reportRoutes = require('./routes/reportRoutes');
+const aiAnalyticsRoutes = require('./routes/aiAnalyticsRoutes');
 const supplierRoutes = require('./routes/supplierRoutes');
 const customerRoutes = require('./routes/customerRoutes');
 const orderRoutes = require('./routes/orderRoutes');
@@ -55,7 +56,8 @@ app.use('/api/products', productRoutes);
 
 // Batch and inventory tracking routes
 app.use('/api/batches', batchRoutes);
-
+// AI Analytics routes
+app.use('/api/ai', aiAnalyticsRoutes);
 // Reporting and analytics routes
 app.use('/api/reports', reportRoutes);
 
@@ -87,7 +89,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start Server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 const server = http.createServer(app);
 
 // Initialize Socket.IO

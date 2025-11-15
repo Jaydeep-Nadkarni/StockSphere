@@ -9,6 +9,7 @@ import Toast from './components/Toast';
 import Login from './pages/Login';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
+import AIDashboard from './pages/AIDashboard';
 import Products from './pages/Products';
 import Orders from './pages/Orders';
 import CreateOrder from './pages/CreateOrder';
@@ -87,6 +88,18 @@ function App() {
                 <ProtectedRoute allowedRoles={['admin']}>
                   <MainLayout>
                     <AdminDashboard />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+            
+            {/* AI Dashboard Route - Admin and Manager Access */}
+            <Route
+              path="/admin/ai-dashboard"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'manager']}>
+                  <MainLayout>
+                    <AIDashboard />
                   </MainLayout>
                 </ProtectedRoute>
               }
