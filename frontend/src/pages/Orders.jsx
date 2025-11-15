@@ -25,7 +25,7 @@ function OrdersPage() {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get('/api/orders', {
+      const { data } = await axios.get('/orders', {
         params: {
           page,
           limit: 10,
@@ -46,7 +46,7 @@ function OrdersPage() {
 
   const handleStatusChange = async () => {
     try {
-      const { data } = await axios.patch(`/api/orders/${selectedOrder._id}/status`, {
+      const { data } = await axios.patch(`/orders/${selectedOrder._id}/status`, {
         status: newStatus,
       });
       if (data.success) {
@@ -64,7 +64,7 @@ function OrdersPage() {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this order? Stock will be restored.')) {
       try {
-        await axios.delete(`/api/orders/${id}`);
+        await axios.delete(`/orders/${id}`);
         toast.success('Order deleted and stock restored');
         fetchOrders();
       } catch (error) {

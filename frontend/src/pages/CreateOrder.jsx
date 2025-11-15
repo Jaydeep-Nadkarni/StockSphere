@@ -30,7 +30,7 @@ function CreateOrderPage() {
 
   const fetchCustomers = async () => {
     try {
-      const { data } = await axios.get('/api/customers', { params: { limit: 100 } });
+      const { data } = await axios.get('/customers', { params: { limit: 100 } });
       if (data.success) {
         setCustomers(data.data.customers);
       }
@@ -41,7 +41,7 @@ function CreateOrderPage() {
 
   const fetchProducts = async () => {
     try {
-      const { data } = await axios.get('/api/products', { params: { limit: 100 } });
+      const { data } = await axios.get('/products', { params: { limit: 100 } });
       if (data.success) {
         setProducts(data.data.products);
       }
@@ -52,7 +52,7 @@ function CreateOrderPage() {
 
   const fetchBatches = async (productId) => {
     try {
-      const { data } = await axios.get(`/api/batches/${productId}`);
+      const { data } = await axios.get(`/batches/${productId}`);
       if (data.success) {
         setBatches(data.data.batches);
       }
@@ -140,7 +140,7 @@ function CreateOrderPage() {
         discount: parseFloat(discount) || 0,
       };
 
-      const { data } = await axios.post('/api/orders', orderData);
+      const { data } = await axios.post('/orders', orderData);
       if (data.success) {
         toast.success('Order created successfully!');
         navigate('/orders');

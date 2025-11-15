@@ -27,7 +27,7 @@ function SuppliersPage() {
   const fetchSuppliers = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get('/api/suppliers', {
+      const { data } = await axios.get('/suppliers', {
         params: { page, limit: 10, search },
       });
       if (data.success) {
@@ -78,12 +78,12 @@ function SuppliersPage() {
       }
 
       if (editingId) {
-        const { data } = await axios.put(`/api/suppliers/${editingId}`, formData);
+        const { data } = await axios.put(`/suppliers/${editingId}`, formData);
         if (data.success) {
           toast.success('Supplier updated successfully');
         }
       } else {
-        const { data } = await axios.post('/api/suppliers', formData);
+        const { data } = await axios.post('/suppliers', formData);
         if (data.success) {
           toast.success('Supplier created successfully');
         }
@@ -98,7 +98,7 @@ function SuppliersPage() {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this supplier?')) {
       try {
-        await axios.delete(`/api/suppliers/${id}`);
+        await axios.delete(`/suppliers/${id}`);
         toast.success('Supplier deleted successfully');
         fetchSuppliers();
       } catch (error) {

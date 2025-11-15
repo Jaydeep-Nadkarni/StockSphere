@@ -30,7 +30,7 @@ function ProductsPage() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get('/api/products', {
+      const { data } = await axios.get('/products', {
         params: { page, limit: 10, search },
       });
       if (data.success) {
@@ -46,7 +46,7 @@ function ProductsPage() {
 
   const fetchSuppliers = async () => {
     try {
-      const { data } = await axios.get('/api/suppliers', { params: { limit: 100 } });
+      const { data } = await axios.get('/suppliers', { params: { limit: 100 } });
       if (data.success) {
         setSuppliers(data.data.suppliers);
       }
@@ -92,12 +92,12 @@ function ProductsPage() {
       }
 
       if (editingId) {
-        const { data } = await axios.put(`/api/products/${editingId}`, formData);
+        const { data } = await axios.put(`/products/${editingId}`, formData);
         if (data.success) {
           toast.success('Product updated successfully');
         }
       } else {
-        const { data } = await axios.post('/api/products', formData);
+        const { data } = await axios.post('/products', formData);
         if (data.success) {
           toast.success('Product created successfully');
         }
@@ -112,7 +112,7 @@ function ProductsPage() {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
-        await axios.delete(`/api/products/${id}`);
+        await axios.delete(`/products/${id}`);
         toast.success('Product deleted successfully');
         fetchProducts();
       } catch (error) {
@@ -166,10 +166,10 @@ function ProductsPage() {
   ];
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-8 dark:bg-gray-900 dark:text-gray-100 min-h-screen">
+      <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">Products</h1>
-        <RoleGuard allowedRoles={['admin', 'manager']}>
+        <RoleGuard allowedRoles={['manager']}>
           <button
             onClick={() => handleOpenModal()}
             className="px-6 py-2 bg-primary text-white rounded hover:bg-blue-700"
@@ -188,7 +188,7 @@ function ProductsPage() {
             setSearch(e.target.value);
             setPage(1);
           }}
-          className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
+          className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
         />
       </div>
 
@@ -199,7 +199,7 @@ function ProductsPage() {
         <button
           onClick={() => setPage(Math.max(1, page - 1))}
           disabled={page === 1}
-          className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+          className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded disabled:opacity-50"
         >
           Previous
         </button>
@@ -209,7 +209,7 @@ function ProductsPage() {
         <button
           onClick={() => setPage(page + 1)}
           disabled={page >= Math.ceil(total / 10)}
-          className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+          className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded disabled:opacity-50"
         >
           Next
         </button>
@@ -218,83 +218,78 @@ function ProductsPage() {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-8 w-full max-w-md">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-8 w-full max-w-md">
             <h2 className="text-2xl font-bold mb-6">
               {editingId ? 'Edit Product' : 'Add Product'}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Product Name *</label>
+                <label className="block text-sm font-medium mb-2">Name</label>
                 <input
-                  type="text"
                   name="name"
+                  type="text"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
-                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                 />
               </div>
+
               <div>
-                <label className="block text-sm font-medium mb-1">SKU *</label>
+                <label className="block text-sm font-medium mb-2">SKU</label>
                 <input
-                  type="text"
                   name="sku"
+                  type="text"
                   value={formData.sku}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
-                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                 />
               </div>
+
               <div>
-                <label className="block text-sm font-medium mb-1">Price *</label>
+                <label className="block text-sm font-medium mb-2">Price</label>
                 <input
-                  type="number"
                   name="price"
+                  type="number"
+                  step="0.01"
                   value={formData.price}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
-                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                 />
               </div>
+
               <div>
-                <label className="block text-sm font-medium mb-1">Category *</label>
+                <label className="block text-sm font-medium mb-2">Category</label>
                 <input
-                  type="text"
                   name="category"
+                  type="text"
                   value={formData.category}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
-                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                 />
               </div>
+
               <div>
-                <label className="block text-sm font-medium mb-1">Supplier</label>
+                <label className="block text-sm font-medium mb-2">Supplier</label>
                 <select
                   name="supplierId"
                   value={formData.supplierId}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                 >
-                  <option value="">Select Supplier</option>
-                  {suppliers.map(supplier => (
-                    <option key={supplier._id} value={supplier._id}>
-                      {supplier.name}
+                  <option value="">Select supplier</option>
+                  {suppliers.map((s) => (
+                    <option key={s._id || s.id} value={s._id || s.id}>
+                      {s.name}
                     </option>
                   ))}
                 </select>
               </div>
-              <div className="flex gap-4 pt-4">
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-2 bg-primary text-white rounded hover:bg-blue-700"
-                >
-                  {editingId ? 'Update' : 'Create'}
+
+              <div className="flex gap-4">
+                <button type="submit" className="flex-1 px-4 py-2 bg-primary text-white rounded">
+                  {editingId ? 'Save Changes' : 'Create'}
                 </button>
-                <button
-                  type="button"
-                  onClick={handleCloseModal}
-                  className="flex-1 px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-                >
+                <button type="button" onClick={() => setShowModal(false)} className="flex-1 px-4 py-2 bg-gray-300 dark:bg-gray-600 rounded">
                   Cancel
                 </button>
               </div>

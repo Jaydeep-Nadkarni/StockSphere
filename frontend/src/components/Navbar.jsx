@@ -1,6 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import ThemeToggle from './ThemeToggle';
 import RoleGuard from './RoleGuard';
 
 const Navbar = () => {
@@ -14,47 +15,37 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white shadow-md sticky top-0 z-50">
+    <nav className="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50">
       <div className="max-w-full px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
+          {/* Logo left */}
           <div className="flex items-center">
             <Link to="/" className="text-2xl font-bold text-primary">
               📦 Synapse
             </Link>
           </div>
 
-          {/* Center Menu */}
-          <div className="hidden md:flex space-x-8">
-            <Link
-              to="/dashboard"
-              className="text-gray-700 hover:text-primary transition"
-            >
-              Dashboard
-            </Link>
-            <Link
-              to="/products"
-              className="text-gray-700 hover:text-primary transition"
-            >
-              Products
-            </Link>
-            <RoleGuard allowedRoles={['admin', 'manager']}>
-              <Link
-                to="/reports"
-                className="text-gray-700 hover:text-primary transition"
-              >
-                Reports
-              </Link>
-            </RoleGuard>
-          </div>
-
-          {/* Right Side - User Menu */}
+          {/* Right actions: theme toggle, settings, profile */}
           <div className="flex items-center space-x-4">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+
+            {/* Settings placeholder (keeps layout as requested) */}
+            <button
+              onClick={() => navigate('/profile')}
+              className="hidden sm:flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600"
+              aria-label="Settings"
+              title="Settings"
+            >
+              ⚙️
+            </button>
+
+            {/* User dropdown */}
             {user && (
               <div className="relative">
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center space-x-2 text-gray-700 hover:text-primary"
+                  className="flex items-center space-x-2 text-gray-700 dark:text-gray-100 hover:text-primary"
                 >
                   <div className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-bold">
                     {user.name?.charAt(0).toUpperCase()}
@@ -65,8 +56,8 @@ const Navbar = () => {
                 </button>
 
                 {isDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2">
-                    <div className="px-4 py-2 border-b">
+                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-2">
+                    <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
                       <p className="text-sm font-semibold">{user.name}</p>
                       <p className="text-xs text-gray-500">{user.email}</p>
                       <p className="text-xs text-gray-500 capitalize">
@@ -75,13 +66,13 @@ const Navbar = () => {
                     </div>
                     <Link
                       to="/profile"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
                       Profile
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="w-full text-left px-4 py-2 text-sm text-danger hover:bg-gray-100"
+                      className="w-full text-left px-4 py-2 text-sm text-danger hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
                       Logout
                     </button>

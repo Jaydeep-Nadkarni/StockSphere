@@ -86,7 +86,7 @@ export default function AdminLogin() {
           >
             {loading ? (
               <>
-                <span className="inline-block animate-spin mr-2">⚙️</span>
+                <span className="inline-block animate-spin mr-2">⚙</span>
                 Authenticating...
               </>
             ) : (
@@ -99,7 +99,7 @@ export default function AdminLogin() {
 
           {/* Info Box */}
           <div className="bg-purple-900/50 border border-purple-700 rounded-lg p-4 text-sm text-purple-200">
-            <p className="font-semibold mb-1">🛡️ Secure Admin Access</p>
+            <p className="font-semibold mb-1">🛡 Secure Admin Access</p>
             <p>This portal is restricted to administrators only. Unauthorized access attempts are logged.</p>
           </div>
 

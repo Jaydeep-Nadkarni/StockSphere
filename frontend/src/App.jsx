@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
+import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
-import Toast from './components/Toast';
 import Login from './pages/Login';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
@@ -58,7 +58,7 @@ const MainLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900 dark:text-gray-100">
       <Navbar />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
@@ -72,10 +72,9 @@ const MainLayout = ({ children }) => {
 
 function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <SocketProvider>
-          <Toast />
+    <AuthProvider>
+      <SocketProvider>
+        <ThemeProvider>
           <Routes>
             {/* Public Routes */}
             <Route path="/login" element={<Login />} />
@@ -88,18 +87,6 @@ function App() {
                 <ProtectedRoute allowedRoles={['admin']}>
                   <MainLayout>
                     <AdminDashboard />
-                  </MainLayout>
-                </ProtectedRoute>
-              }
-            />
-            
-            {/* AI Dashboard Route - Admin and Manager Access */}
-            <Route
-              path="/admin/ai-dashboard"
-              element={
-                <ProtectedRoute allowedRoles={['admin', 'manager']}>
-                  <MainLayout>
-                    <AIDashboard />
                   </MainLayout>
                 </ProtectedRoute>
               }
@@ -218,9 +205,9 @@ function App() {
             {/* Catch all - redirect to login */}
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
-        </SocketProvider>
-      </AuthProvider>
-    </Router>
+        </ThemeProvider>
+      </SocketProvider>
+    </AuthProvider>
   );
 }
 

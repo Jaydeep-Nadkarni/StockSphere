@@ -26,7 +26,7 @@ function CustomersPage() {
   const fetchCustomers = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get('/api/customers', {
+      const { data } = await axios.get('/customers', {
         params: { page, limit: 10, search },
       });
       if (data.success) {
@@ -76,12 +76,12 @@ function CustomersPage() {
       }
 
       if (editingId) {
-        const { data } = await axios.put(`/api/customers/${editingId}`, formData);
+        const { data } = await axios.put(`/customers/${editingId}`, formData);
         if (data.success) {
           toast.success('Customer updated successfully');
         }
       } else {
-        const { data } = await axios.post('/api/customers', formData);
+        const { data } = await axios.post('/customers', formData);
         if (data.success) {
           toast.success('Customer created successfully');
         }
@@ -96,7 +96,7 @@ function CustomersPage() {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this customer?')) {
       try {
-        await axios.delete(`/api/customers/${id}`);
+        await axios.delete(`/customers/${id}`);
         toast.success('Customer deleted successfully');
         fetchCustomers();
       } catch (error) {
