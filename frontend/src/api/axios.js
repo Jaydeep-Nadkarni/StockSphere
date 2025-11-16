@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 // Create axios instance
 const apiClient = axios.create({
@@ -35,15 +35,12 @@ apiClient.interceptors.response.use(
       // Clear auth data from localStorage
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-
-      // Determine correct login portal based on current route
-      const pathname = window.location.pathname;
-      const isAdminRoute = pathname.startsWith('/admin');
-      const targetLogin = isAdminRoute ? '/admin/login' : '/login';
-
-      // Redirect only if not already on the correct login page
-      if (pathname !== targetLogin) {
-        window.location.href = targetLogin;
+      
+      // Redirect to the appropriate login portal based on current section
+      const isAdminSection = window.location.pathname.startsWith('/admin');
+      const target = isAdminSection ? '/admin/login' : '/login';
+      if (window.location.pathname !== target) {
+        window.location.href = target;
       }
     }
 

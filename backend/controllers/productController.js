@@ -235,6 +235,46 @@ exports.updateProduct = async (req, res) => {
   }
 };
 
+// @desc    Update product stock directly
+// @route   PUT /api/products/:id/stock
+// @access  Private (Admin, Manager)
+exports.updateProductStock = async (req, res) => {
+  try {
+    const { currentStock } = req.body;
+
+    // Validate input
+    const parsed = parseInt(currentStock, 10);
+    if (isNaN(parsed) || parsed < 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Stock must be a non-negative integer',
+      });
+    }
+
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found',
+      });
+    }
+
+    // Update stock
+    product.currentStock = parsed;
+    await product.save();
+
+    res.status(200).json({
+      success: true,
+      data: { product },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 // @desc    Delete product
 // @route   DELETE /api/products/:id
 // @access  Private (Admin only)

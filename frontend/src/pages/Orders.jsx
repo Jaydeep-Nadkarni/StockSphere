@@ -160,7 +160,7 @@ function OrdersPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Orders</h1>
         <button
-          onClick={() => navigate('/orders/create')}
+          onClick={() => navigate('/create-order')}
           className="px-6 py-2 bg-primary text-white rounded hover:bg-blue-700"
         >
           + New Order

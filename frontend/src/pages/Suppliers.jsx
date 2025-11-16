@@ -280,3 +280,17 @@ function SuppliersPage() {
 }
 
 export default SuppliersPage;
+
+const addSupplier = async () => {
+  try {
+    const { data } = await axios.post('/suppliers', newSupplier);
+    if (data.success) {
+      toast.success('Supplier added successfully');
+      setShowAddModal(false);
+      setNewSupplier({ name: '', contact: '', email: '' });
+      fetchSuppliers();
+    }
+  } catch (error) {
+    toast.error(error.response?.data?.message || 'Error adding supplier');
+  }
+};

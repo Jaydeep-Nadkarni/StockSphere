@@ -6,6 +6,7 @@ const {
   updateProduct,
   deleteProduct,
   getLowStockProducts,
+  updateProductStock,
 } = require('../controllers/productController');
 const protect = require('../middleware/authMiddleware');
 const authorize = require('../middleware/roleMiddleware');
@@ -39,6 +40,11 @@ router.post('/', authorize('admin', 'manager'), createProduct);
 // @desc    Update product details
 // @access  Private (Admin, Manager only)
 router.put('/:id', authorize('admin', 'manager'), updateProduct);
+
+// @route   PUT /api/products/:id/stock
+// @desc    Update product stock directly
+// @access  Private (Admin, Manager only)
+router.put('/:id/stock', authorize('admin', 'manager'), updateProductStock);
 
 // @route   DELETE /api/products/:id
 // @desc    Delete product (only if no batches exist)

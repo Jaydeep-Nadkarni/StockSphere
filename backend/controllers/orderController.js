@@ -121,7 +121,7 @@ exports.createOrder = async (req, res) => {
     // Validate all items and check stock
     const validatedItems = [];
     for (const item of items) {
-      const { productId, batchId, quantity } = item;
+      const { productId, quantity } = item;
 
       // Verify product exists
       const product = await Product.findById(productId).session(session);
@@ -133,52 +133,29 @@ exports.createOrder = async (req, res) => {
         });
       }
 
-      // Verify batch exists and get price
-      const batch = await Batch.findById(batchId).session(session);
-      if (!batch) {
-        await session.abortTransaction();
-        return res.status(404).json({
-          success: false,
-          message: `Batch ${batchId} not found`,
-        });
-      }
-
-      // Check if batch is expired
-      if (batch.isExpired()) {
+      // Check if quantity is available in current stock
+      if (product.currentStock < quantity) {
         await session.abortTransaction();
         return res.status(400).json({
           success: false,
-          message: `Batch ${batch.batchNo} is already expired`,
-        });
-      }
-
-      // Check if quantity is available
-      if (batch.quantity < quantity) {
-        await session.abortTransaction();
-        return res.status(400).json({
-          success: false,
-          message: `Insufficient quantity for batch ${batch.batchNo}. Available: ${batch.quantity}, Requested: ${quantity}`,
+          message: `Insufficient stock for ${product.name}. Available: ${product.currentStock}, Requested: ${quantity}`,
         });
       }
 
       validatedItems.push({
         productId,
-        batchId,
         quantity: parseInt(quantity),
         price: product.price,
       });
     }
 
-    // Deduct quantities from all batches
+    // Deduct quantities from product stock
     for (const item of validatedItems) {
-      await Batch.findByIdAndUpdate(
-        item.batchId,
-        { $inc: { quantity: -item.quantity } },
+      await Product.findByIdAndUpdate(
+        item.productId,
+        { $inc: { currentStock: -item.quantity } },
         { session }
       );
-
-      // Update product stock
-      await updateProductStock(item.productId);
     }
 
     // Create order
@@ -201,8 +178,7 @@ exports.createOrder = async (req, res) => {
     const populatedOrder = await Order.findById(order[0]._id)
       .populate('customerId', 'name email phone')
       .populate('createdBy', 'name email')
-      .populate('items.productId', 'name sku')
-      .populate('items.batchId', 'batchNo expiryDate');
+      .populate('items.productId', 'name sku');
 
     // Emit Socket.IO event
     emitNewOrder({
@@ -259,9 +235,9 @@ exports.updateOrder = async (req, res) => {
     // If items are being changed, restore old quantities first
     if (items) {
       for (const oldItem of order.items) {
-        await Batch.findByIdAndUpdate(
-          oldItem.batchId,
-          { $inc: { quantity: oldItem.quantity } },
+        await Product.findByIdAndUpdate(
+          oldItem.productId,
+          { $inc: { currentStock: oldItem.quantity } },
           { session }
         );
       }
@@ -269,7 +245,7 @@ exports.updateOrder = async (req, res) => {
       // Validate and deduct new items
       const validatedItems = [];
       for (const item of items) {
-        const { productId, batchId, quantity } = item;
+        const { productId, quantity } = item;
 
         const product = await Product.findById(productId).session(session);
         if (!product) {
@@ -280,34 +256,16 @@ exports.updateOrder = async (req, res) => {
           });
         }
 
-        const batch = await Batch.findById(batchId).session(session);
-        if (!batch) {
-          await session.abortTransaction();
-          return res.status(404).json({
-            success: false,
-            message: `Batch ${batchId} not found`,
-          });
-        }
-
-        if (batch.isExpired()) {
+        if (product.currentStock < quantity) {
           await session.abortTransaction();
           return res.status(400).json({
             success: false,
-            message: `Batch ${batch.batchNo} is expired`,
-          });
-        }
-
-        if (batch.quantity < quantity) {
-          await session.abortTransaction();
-          return res.status(400).json({
-            success: false,
-            message: `Insufficient quantity for batch ${batch.batchNo}`,
+            message: `Insufficient stock for ${product.name}`,
           });
         }
 
         validatedItems.push({
           productId,
-          batchId,
           quantity: parseInt(quantity),
           price: product.price,
         });
@@ -315,12 +273,11 @@ exports.updateOrder = async (req, res) => {
 
       // Deduct new quantities
       for (const item of validatedItems) {
-        await Batch.findByIdAndUpdate(
-          item.batchId,
-          { $inc: { quantity: -item.quantity } },
+        await Product.findByIdAndUpdate(
+          item.productId,
+          { $inc: { currentStock: -item.quantity } },
           { session }
         );
-        await updateProductStock(item.productId);
       }
 
       order.items = validatedItems;
@@ -370,14 +327,13 @@ exports.deleteOrder = async (req, res) => {
       });
     }
 
-    // Restore all batch quantities
+    // Restore all product quantities
     for (const item of order.items) {
-      await Batch.findByIdAndUpdate(
-        item.batchId,
-        { $inc: { quantity: item.quantity } },
+      await Product.findByIdAndUpdate(
+        item.productId,
+        { $inc: { currentStock: item.quantity } },
         { session }
       );
-      await updateProductStock(item.productId);
     }
 
     await Order.findByIdAndDelete(req.params.id, { session });

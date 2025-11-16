@@ -96,15 +96,6 @@ const Login = () => {
             )}
           </button>
 
-          {/* Demo Credentials Box */}
-          <div className="bg-blue-900/50 border border-blue-700 rounded-lg p-4 text-sm text-blue-200">
-            <p className="font-semibold mb-2">📋 Demo Credentials</p>
-            <div className="space-y-1 text-xs">
-              <p><strong>Manager:</strong> manager@example.com / password123</p>
-              <p><strong>Clerk:</strong> clerk@example.com / password123</p>
-            </div>
-          </div>
-
           {/* Link to Admin Login */}
           <div className="text-center pt-4 border-t border-slate-700">
             <p className="text-gray-400 mb-2">Are you an Administrator?</p>

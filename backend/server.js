@@ -56,8 +56,14 @@ app.use('/api/products', productRoutes);
 
 // Batch and inventory tracking routes
 app.use('/api/batches', batchRoutes);
-// AI Analytics routes
-app.use('/api/ai', aiAnalyticsRoutes);
+
+// AI Analytics routes - enable when OPENAI_API_KEY is configured
+if (process.env.OPENAI_API_KEY) {
+  app.use('/api/ai', aiAnalyticsRoutes);
+} else {
+  console.warn('AI Analytics disabled: missing OPENAI_API_KEY');
+}
+
 // Reporting and analytics routes
 app.use('/api/reports', reportRoutes);
 
@@ -89,7 +95,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start Server
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
 
 // Initialize Socket.IO

@@ -1,19 +1,19 @@
-import { useContext } from 'react';
-import { ThemeContext } from '../context/ThemeContext';
+import React from 'react';
+import { useTheme } from '../context/ThemeContext';
 
-export default function ThemeToggle() {
-  const { theme, toggleTheme } = useContext(ThemeContext);
-  const isDark = theme === 'dark';
+const ThemeToggle = () => {
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <button
       onClick={toggleTheme}
-      className={`flex items-center justify-center w-9 h-9 rounded-full transition
-        ${isDark ? 'bg-gray-700 text-yellow-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+      className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600"
       aria-label="Toggle theme"
-      title={isDark ? 'Switch to Light' : 'Switch to Dark'}
-    >
-      {isDark ? '🌙' : '☀️'}
+      title={theme === 'dark' ? 'Switch to light' : 'Switch to dark'}
+   >
+      {theme === 'dark' ? '🌙' : '☀️'}
     </button>
   );
-}
+};
+
+export default ThemeToggle;

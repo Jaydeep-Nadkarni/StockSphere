@@ -82,11 +82,13 @@ exports.createSupplier = async (req, res) => {
       });
     }
 
-    const existingSupplier = await Supplier.findOne({ email });
+    const existingSupplier = await Supplier.findOne({
+      $or: [{ email }, { phone }],
+    });
     if (existingSupplier) {
       return res.status(400).json({
         success: false,
-        message: 'Supplier with this email already exists',
+        message: existingSupplier.email === email ? 'Supplier with this email already exists' : 'Supplier with this phone already exists',
       });
     }
 
@@ -141,6 +143,16 @@ exports.updateSupplier = async (req, res) => {
         return res.status(400).json({
           success: false,
           message: 'Email already in use',
+        });
+      }
+    }
+
+    if (phone && phone !== supplier.phone) {
+      const existing = await Supplier.findOne({ phone });
+      if (existing) {
+        return res.status(400).json({
+          success: false,
+          message: 'Phone number already in use',
         });
       }
     }

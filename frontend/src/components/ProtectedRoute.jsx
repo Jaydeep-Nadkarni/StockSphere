@@ -13,10 +13,10 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     );
   }
 
-  // If not authenticated, send admins to admin login, others to user login
+  // If not authenticated, send to the correct portal
   if (!isAuthenticated) {
-    const isAdminRoute = allowedRoles.includes('admin');
-    return <Navigate to={isAdminRoute ? '/admin/login' : '/login'} replace />;
+    const needsAdminPortal = allowedRoles.includes('admin');
+    return <Navigate to={needsAdminPortal ? '/admin/login' : '/login'} replace />;
   }
 
   // Check role-based access
